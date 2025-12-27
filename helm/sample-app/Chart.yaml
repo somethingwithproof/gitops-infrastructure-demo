@@ -1,0 +1,9 @@
+apiVersion: v2
+name: sample-app
+description: A sample Helm chart demonstrating GitOps patterns
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+maintainers:
+  - name: Thomas Vincent
+    email: thomasvincent@gmail.com
