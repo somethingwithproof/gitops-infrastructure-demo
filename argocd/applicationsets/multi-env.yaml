@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: sample-app-envs
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - env: dev
+            replicas: "1"
+          - env: staging
+            replicas: "2"
+          - env: production
+            replicas: "3"
+  template:
+    metadata:
+      name: 'sample-app-{{env}}'
+      namespace: argocd
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/thomasvincent/gitops-infrastructure-demo.git
+        targetRevision: main
+        path: helm/sample-app
+        helm:
+          parameters:
+            - name: replicaCount
+              value: '{{replicas}}'
+            - name: environment
+              value: '{{env}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'sample-app-{{env}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
