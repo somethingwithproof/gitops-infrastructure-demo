@@ -1,0 +1,34 @@
+# Kyverno Policy: Require standard labels on all resources
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-labels
+  annotations:
+    policies.kyverno.io/title: Require Labels
+    policies.kyverno.io/category: Best Practices
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Require standard labels for resource organization,
+      cost allocation, and ownership tracking.
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+  - name: check-labels
+    match:
+      any:
+      - resources:
+          kinds:
+          - Deployment
+          - StatefulSet
+          - DaemonSet
+          - Job
+          - CronJob
+    validate:
+      message: "Labels 'app.kubernetes.io/name', 'app.kubernetes.io/part-of', and 'app.kubernetes.io/managed-by' are required."
+      pattern:
+        metadata:
+          labels:
+            app.kubernetes.io/name: "?*"
+            app.kubernetes.io/part-of: "?*"
+            app.kubernetes.io/managed-by: "?*"

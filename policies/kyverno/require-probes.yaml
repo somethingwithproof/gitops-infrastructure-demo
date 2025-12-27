@@ -1,0 +1,34 @@
+# Kyverno Policy: Require liveness and readiness probes
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-probes
+  annotations:
+    policies.kyverno.io/title: Require Probes
+    policies.kyverno.io/category: Best Practices
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Liveness and readiness probes are required for proper
+      health checking and zero-downtime deployments.
+spec:
+  validationFailureAction: audit  # Start with audit, move to enforce
+  background: true
+  rules:
+  - name: validate-probes
+    match:
+      any:
+      - resources:
+          kinds:
+          - Deployment
+          - StatefulSet
+    validate:
+      message: "Liveness and readiness probes are required."
+      pattern:
+        spec:
+          template:
+            spec:
+              containers:
+              - livenessProbe:
+                  periodSeconds: ">0"
+                readinessProbe:
+                  periodSeconds: ">0"

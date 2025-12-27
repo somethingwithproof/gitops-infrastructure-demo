@@ -1,0 +1,84 @@
+# PrometheusRule for GitOps alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gitops-alerts
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  groups:
+  - name: argocd
+    rules:
+    - alert: ArgoCDAppOutOfSync
+      expr: argocd_app_info{sync_status="OutOfSync"} == 1
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: "ArgoCD app {{ $labels.name }} is out of sync"
+        description: "Application {{ $labels.name }} in project {{ $labels.project }} has been out of sync for more than 15 minutes."
+
+    - alert: ArgoCDAppHealthDegraded
+      expr: argocd_app_info{health_status=~"Degraded|Missing"} == 1
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "ArgoCD app {{ $labels.name }} is degraded"
+        description: "Application {{ $labels.name }} health status is {{ $labels.health_status }}."
+
+    - alert: ArgoCDSyncFailed
+      expr: increase(argocd_app_sync_total{phase="Failed"}[1h]) > 0
+      labels:
+        severity: critical
+      annotations:
+        summary: "ArgoCD sync failed for {{ $labels.name }}"
+        description: "Application {{ $labels.name }} sync has failed in the last hour."
+
+  - name: argo-rollouts
+    rules:
+    - alert: RolloutStalled
+      expr: kube_rollout_status_phase{phase="Paused"} == 1
+      for: 30m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Rollout {{ $labels.rollout }} is stalled"
+        description: "Rollout {{ $labels.rollout }} in namespace {{ $labels.namespace }} has been paused for more than 30 minutes."
+
+    - alert: RolloutFailed
+      expr: kube_rollout_status_phase{phase="Degraded"} == 1
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Rollout {{ $labels.rollout }} failed"
+        description: "Rollout {{ $labels.rollout }} in namespace {{ $labels.namespace }} is in degraded state."
+
+  - name: deployment-health
+    rules:
+    - alert: HighErrorRate
+      expr: |
+        sum(rate(http_requests_total{status=~"5.."}[5m])) by (namespace, service)
+        /
+        sum(rate(http_requests_total[5m])) by (namespace, service)
+        > 0.01
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High error rate for {{ $labels.service }}"
+        description: "Service {{ $labels.service }} in {{ $labels.namespace }} has error rate above 1%."
+
+    - alert: HighLatency
+      expr: |
+        histogram_quantile(0.99, 
+          sum(rate(http_request_duration_seconds_bucket[5m])) by (namespace, service, le)
+        ) > 0.5
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High latency for {{ $labels.service }}"
+        description: "Service {{ $labels.service }} P99 latency is above 500ms."

@@ -1,0 +1,81 @@
+# Prometheus Stack Values
+# Deployed via ArgoCD Application
+
+prometheus:
+  prometheusSpec:
+    retention: 15d
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 250m
+      limits:
+        memory: 2Gi
+        cpu: 1000m
+    
+    # Service discovery for pods with prometheus.io annotations
+    podMonitorSelector: {}
+    serviceMonitorSelector: {}
+    
+    # Storage
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+
+grafana:
+  enabled: true
+  adminPassword: "" # Use external secret
+  
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'default'
+        folder: ''
+        type: file
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+  dashboards:
+    default:
+      kubernetes-cluster:
+        gnetId: 7249
+        revision: 1
+        datasource: Prometheus
+      argocd:
+        gnetId: 14584
+        revision: 1
+        datasource: Prometheus
+      argo-rollouts:
+        gnetId: 15386
+        revision: 1
+        datasource: Prometheus
+
+alertmanager:
+  config:
+    global:
+      slack_api_url: "" # From external secret
+    
+    route:
+      group_by: ['alertname', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      receiver: 'slack-notifications'
+      routes:
+      - match:
+          severity: critical
+        receiver: 'pagerduty'
+    
+    receivers:
+    - name: 'slack-notifications'
+      slack_configs:
+      - channel: '#alerts'
+        send_resolved: true
+    
+    - name: 'pagerduty'
+      pagerduty_configs:
+      - service_key: "" # From external secret

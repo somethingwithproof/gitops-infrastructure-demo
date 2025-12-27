@@ -1,0 +1,133 @@
+# Argo Rollouts Canary Strategy Example
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: sample-app
+  namespace: production
+spec:
+  replicas: 10
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: sample-app
+  template:
+    metadata:
+      labels:
+        app: sample-app
+    spec:
+      containers:
+      - name: app
+        image: sample-app:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  strategy:
+    canary:
+      # Traffic routing
+      canaryService: sample-app-canary
+      stableService: sample-app-stable
+      
+      # Rollout steps
+      steps:
+      # Step 1: 10% traffic to canary
+      - setWeight: 10
+      - pause: {duration: 2m}
+      
+      # Step 2: Analyze metrics
+      - analysis:
+          templates:
+          - templateName: success-rate
+          args:
+          - name: service-name
+            value: sample-app-canary
+      
+      # Step 3: 25% traffic
+      - setWeight: 25
+      - pause: {duration: 2m}
+      
+      # Step 4: 50% traffic
+      - setWeight: 50
+      - pause: {duration: 5m}
+      
+      # Step 5: Final analysis before full promotion
+      - analysis:
+          templates:
+          - templateName: success-rate
+          - templateName: latency-check
+      
+      # Step 6: Full rollout
+      - setWeight: 100
+
+      # Anti-affinity between canary and stable
+      antiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          weight: 100
+
+---
+# Analysis Template: Success Rate
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate
+  namespace: production
+spec:
+  args:
+  - name: service-name
+  metrics:
+  - name: success-rate
+    interval: 30s
+    count: 5
+    successCondition: result[0] >= 0.99
+    failureLimit: 3
+    provider:
+      prometheus:
+        address: http://prometheus.monitoring:9090
+        query: |
+          sum(rate(
+            http_requests_total{service="{{args.service-name}}",status!~"5.."}[2m]
+          )) / 
+          sum(rate(
+            http_requests_total{service="{{args.service-name}}"}[2m]
+          ))
+
+---
+# Analysis Template: Latency Check
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: latency-check
+  namespace: production
+spec:
+  metrics:
+  - name: p99-latency
+    interval: 30s
+    count: 5
+    successCondition: result[0] < 0.5
+    failureLimit: 3
+    provider:
+      prometheus:
+        address: http://prometheus.monitoring:9090
+        query: |
+          histogram_quantile(0.99,
+            sum(rate(
+              http_request_duration_seconds_bucket{service="sample-app-canary"}[2m]
+            )) by (le)
+          )
