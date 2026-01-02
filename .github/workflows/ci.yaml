@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v3.1.2
         with:
           terraform_version: 1.6.0
       - name: Terraform Format Check
@@ -40,7 +40,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: aquasecurity/tfsec-action@v1.0.3
+      - uses: aquasecurity/tfsec-action@v1.0.2
         with:
           soft_fail: true
 
@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: azure/setup-helm@v3
+      - uses: azure/setup-helm@v4.2.0
         with:
           version: v3.13.0
       - run: helm lint helm/sample-app
@@ -62,7 +62,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: ibiqlik/action-yamllint@v3
+      - uses: ibiqlik/action-yamllint@v3.1.1
         with:
           file_or_dir: argocd/
           config_data: |
