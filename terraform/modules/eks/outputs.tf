@@ -6,6 +6,7 @@ output "cluster_name" {
 output "cluster_endpoint" {
   description = "EKS cluster endpoint"
   value       = aws_eks_cluster.this.endpoint
+  sensitive   = true
 }
 
 output "cluster_security_group_id" {
