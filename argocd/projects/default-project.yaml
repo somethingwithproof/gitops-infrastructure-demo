@@ -14,6 +14,14 @@ spec:
       server: https://kubernetes.default.svc
     - namespace: 'kube-system'
       server: https://kubernetes.default.svc
+    - namespace: 'sample-app'
+      server: https://kubernetes.default.svc
+    - namespace: 'sample-app-dev'
+      server: https://kubernetes.default.svc
+    - namespace: 'sample-app-staging'
+      server: https://kubernetes.default.svc
+    - namespace: 'sample-app-production'
+      server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace
