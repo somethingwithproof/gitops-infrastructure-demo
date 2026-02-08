@@ -16,8 +16,13 @@ resource "helm_release" "argocd" {
   values = [
     yamlencode({
       server = {
-        extraArgs = ["--insecure"]
-        service   = { type = "LoadBalancer" }
+        service = { type = "LoadBalancer" }
+        certificate = {
+          enabled = true
+        }
+        ingress = {
+          enabled = false
+        }
       }
       configs = {
         repositories = {
@@ -25,6 +30,9 @@ resource "helm_release" "argocd" {
             url  = var.git_repo_url
             type = "git"
           }
+        }
+        params = {
+          "server.insecure" = "false"
         }
       }
       applicationSet = { enabled = true }
