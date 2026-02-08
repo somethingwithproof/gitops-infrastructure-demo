@@ -16,7 +16,7 @@ resource "helm_release" "argocd" {
   values = [
     yamlencode({
       server = {
-        service = { type = "LoadBalancer" }
+        service = { type = "ClusterIP" }
         certificate = {
           enabled = true
         }
