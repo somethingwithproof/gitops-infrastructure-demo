@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f85571c5fb643da9750e94b949 # v3.1.2
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0
       - name: Terraform Format Check
