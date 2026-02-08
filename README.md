@@ -81,14 +81,15 @@ flowchart TB
     └── workflows/            # CI/CD pipelines
 ```
 
-## 🚀 Quick Start
-
-### Prerequisites
+## Prerequisites
 
 - AWS CLI configured with appropriate credentials
 - Terraform >= 1.6
 - kubectl >= 1.28
 - Helm >= 3.13
+- ArgoCD CLI (optional)
+
+## Quick Start
 
 ### 1. Provision Infrastructure
 
@@ -114,6 +115,49 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 # Port forward
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
+
+## Module Structure
+
+See [Repository Structure](#-repository-structure) above for detailed organization.
+
+## Variables
+
+Module-specific variables are documented in each module's `variables.tf`:
+- `terraform/modules/vpc/variables.tf` - VPC configuration
+- `terraform/modules/eks/variables.tf` - EKS cluster settings
+- `terraform/modules/argocd/variables.tf` - ArgoCD bootstrap
+
+## Outputs
+
+Module outputs are defined in respective `outputs.tf` files:
+- Cluster endpoint and certificate authority
+- VPC and subnet IDs
+- ArgoCD initial admin password
+
+## Development
+
+Format Terraform code:
+```bash
+terraform fmt -recursive
+```
+
+Validate configuration:
+```bash
+terraform validate
+```
+
+Run linting:
+```bash
+tflint
+```
+
+## Testing
+
+CI/CD pipeline includes:
+- Terraform validation and formatting checks
+- Security scanning with tfsec
+- Kubernetes manifest validation
+- Container image scanning with Trivy
 
 ## 🔄 Progressive Delivery
 
