@@ -25,8 +25,6 @@ spec:
       - resources:
           namespaces:
           - kube-system
-          - argocd
-          - monitoring
     validate:
       message: "Privileged containers are not allowed."
       pattern:

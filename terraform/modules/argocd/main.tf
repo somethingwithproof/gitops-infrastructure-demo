@@ -16,8 +16,8 @@ resource "helm_release" "argocd" {
   values = [
     yamlencode({
       server = {
-        extraArgs = ["--insecure"]
-        service   = { type = "LoadBalancer" }
+        extraArgs = []
+        service   = { type = "ClusterIP" }
       }
       configs = {
         repositories = {

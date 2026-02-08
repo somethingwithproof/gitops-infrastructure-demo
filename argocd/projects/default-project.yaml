@@ -9,7 +9,13 @@ spec:
     - https://github.com/thomasvincent/gitops-infrastructure-demo.git
     - https://charts.helm.sh/stable
   destinations:
-    - namespace: '*'
+    - namespace: 'sample-app'
+      server: https://kubernetes.default.svc
+    - namespace: 'argocd'
+      server: https://kubernetes.default.svc
+    - namespace: 'monitoring'
+      server: https://kubernetes.default.svc
+    - namespace: 'kube-system'
       server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: ''
