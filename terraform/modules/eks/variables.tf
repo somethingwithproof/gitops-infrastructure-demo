@@ -40,5 +40,5 @@ variable "node_groups" {
 variable "public_access_cidrs" {
   description = "List of CIDR blocks that can access the EKS public API endpoint"
   type        = list(string)
-  default     = ["10.0.0.0/8"]
+  default     = ["0.0.0.0/0"]
 }
