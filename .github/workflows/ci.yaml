@@ -18,7 +18,7 @@ permissions:
 jobs:
   terraform-validate:
     name: Terraform Validate
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -36,7 +36,7 @@ jobs:
 
   terraform-security:
     name: Terraform Security Scan
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -46,7 +46,7 @@ jobs:
 
   helm-lint:
     name: Helm Lint
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -58,7 +58,7 @@ jobs:
 
   yaml-lint:
     name: YAML Lint
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
